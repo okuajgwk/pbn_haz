@@ -1,7 +1,5 @@
-
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View } from 'react-native';
-
 export default function HomeScreen() {
     const router = useRouter();
     return (
@@ -38,6 +36,7 @@ export default function HomeScreen() {
 
             {/* VANDAL BUTTON */}
             <TouchableOpacity
+                onPress={() => router.push('/scanner' as any)}
                 style={{
                     borderWidth: 2,
                     borderColor: '#ff00ff',
@@ -60,7 +59,7 @@ export default function HomeScreen() {
 
             {/* ARTIST BUTTON */}
             <TouchableOpacity
-                onPress={() => router.push('/login')}
+                onPress={() => router.push('/login' as any)}
                 style={{
                     borderWidth: 2,
                     borderColor: '#00ffff',
@@ -77,6 +76,45 @@ export default function HomeScreen() {
                     }}
                 >
                     ARTIST
+                </Text>
+            </TouchableOpacity>
+
+            {/* BUTON SCANARE AFIȘ */}
+            <TouchableOpacity
+                onPress={() => router.push('/scanner' as any)}
+                style={{
+                    marginTop: 40,
+                    borderWidth: 2,
+                    borderColor: '#ffff00',
+                    paddingVertical: 15,
+                    paddingHorizontal: 40,
+                    transform: [{ skewX: '-10deg' }],
+                }}
+            >
+                <Text
+                    style={{
+                        color: '#ffff00',
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                    }}
+                >
+                    SCAN POSTER
+                </Text>
+            </TouchableOpacity>
+
+            {/* BUTON TEST CANVAS — șterge după testare */}
+            <TouchableOpacity
+                onPress={() => router.push('/test-canvas' as any)}
+                style={{
+                    marginTop: 40,
+                    borderWidth: 1,
+                    borderColor: '#555',
+                    paddingVertical: 10,
+                    paddingHorizontal: 30,
+                }}
+            >
+                <Text style={{ color: '#555', fontSize: 14 }}>
+                    TEST CANVAS
                 </Text>
             </TouchableOpacity>
         </View>

@@ -9,52 +9,50 @@ import { auth } from '../firebaseConfig';
 import { useAuthStore } from '../store/authStore';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+    anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const router = useRouter();
-  const segments = useSegments();
-  const { setUser, setLoading, isLoading, user } = useAuthStore();
+    const colorScheme = useColorScheme();
+    const router = useRouter();
+    const segments = useSegments();
+    const { setUser, setLoading, isLoading, user } = useAuthStore();
 
-  useEffect(() => {
-    // Firebase verifică automat dacă există un token salvat pe dispozitiv.
-    // Această funcție rulează imediat la pornire și ori de câte ori
-    // starea de autentificare se schimbă (login, logout).
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
-    });
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            setUser(firebaseUser);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
 
-    return () => unsubscribe(); // Curățăm listener-ul la distrugerea componentei
-  }, []);
+    useEffect(() => {
+        if (isLoading) return;
 
-  useEffect(() => {
-    if (isLoading) return;
+        const onAuthScreens = segments[0] === 'login' as any || segments[0] === 'signup' as any;
+        const onProtectedScreens =
+            segments[0] === 'cameraScreen' as any ||
+            segments[0] === 'scanner' as any ||
+            segments[0] === 'canvas' as any;
 
-    const onCameraScreen = segments[0] === 'cameraScreen';
-    const onAuthScreens = segments[0] === 'login' || segments[0] === 'signup';
+        if (!user && onProtectedScreens) {
+            router.replace('/login' as any);
+        } else if (!user && !onAuthScreens && segments[0] !== '(tabs)') {
+            router.replace('/');
+        }
+    }, [isLoading, segments, user]);
 
-    if (user && !onCameraScreen) {
-      router.replace('/cameraScreen');
-    } else if (!user && !onAuthScreens && segments[0] !== '(tabs)') {
-      router.replace('/');
-    }
-}, [isLoading, segments, user]);
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* Tab-urile (Index + Explore) — publice */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* Ecrane fără tab bar și fără header */}
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="signup" options={{ headerShown: false }} />
-        <Stack.Screen name="cameraScreen" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="signup" options={{ headerShown: false }} />
+                <Stack.Screen name="cameraScreen" options={{ headerShown: false }} />
+                <Stack.Screen name="scanner" options={{ headerShown: false }} />
+                <Stack.Screen name="canvas" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+        </ThemeProvider>
+    );
 }
