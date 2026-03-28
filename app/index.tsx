@@ -34,6 +34,7 @@ export default function HomeScreen() {
                 Are you a
             </Text>
 
+
             {/* VANDAL BUTTON */}
             <TouchableOpacity
                 onPress={() => router.push('/scanner' as any)}
@@ -79,44 +80,8 @@ export default function HomeScreen() {
                 </Text>
             </TouchableOpacity>
 
-            {/* BUTON SCANARE AFIȘ */}
-            <TouchableOpacity
-                onPress={() => router.push('/scanner' as any)}
-                style={{
-                    marginTop: 40,
-                    borderWidth: 2,
-                    borderColor: '#ffff00',
-                    paddingVertical: 15,
-                    paddingHorizontal: 40,
-                    transform: [{ skewX: '-10deg' }],
-                }}
-            >
-                <Text
-                    style={{
-                        color: '#ffff00',
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                    }}
-                >
-                    SCAN POSTER
-                </Text>
-            </TouchableOpacity>
 
-            {/* BUTON TEST CANVAS — șterge după testare */}
-            <TouchableOpacity
-                onPress={() => router.push('/test-canvas' as any)}
-                style={{
-                    marginTop: 40,
-                    borderWidth: 1,
-                    borderColor: '#555',
-                    paddingVertical: 10,
-                    paddingHorizontal: 30,
-                }}
-            >
-                <Text style={{ color: '#555', fontSize: 14 }}>
-                    TEST CANVAS
-                </Text>
-            </TouchableOpacity>
+
         </View>
     );
 }

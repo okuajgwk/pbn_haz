@@ -9,7 +9,7 @@ import { auth } from '../firebaseConfig';
 import { useAuthStore } from '../store/authStore';
 
 export const unstable_settings = {
-    anchor: '(tabs)',
+    initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -29,22 +29,23 @@ export default function RootLayout() {
     useEffect(() => {
         if (isLoading) return;
 
-        const onAuthScreens = segments[0] === 'login' as any || segments[0] === 'signup' as any;
-        const onProtectedScreens =
-            segments[0] === 'cameraScreen' as any ||
-            segments[0] === 'scanner' as any ||
-            segments[0] === 'canvas' as any;
+        const onAuthScreens = segments[0] === 'login' || segments[0] === 'signup';
+        const onProtectedScreens = segments[0] === 'cameraScreen';
+        const onPublicScreens =
+            segments[0] === 'scanner' ||
+            segments[0] === 'canvas' ||
+            segments[0] === '(tabs)' ||
+            segments[0] === undefined;
 
         if (!user && onProtectedScreens) {
-            router.replace('/login' as any);
-        } else if (!user && !onAuthScreens && segments[0] !== '(tabs)') {
-            router.replace('/');
+            router.replace('/login');
         }
     }, [isLoading, segments, user]);
 
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="login" options={{ headerShown: false }} />
                 <Stack.Screen name="signup" options={{ headerShown: false }} />
