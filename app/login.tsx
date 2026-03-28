@@ -27,7 +27,7 @@ export default function App() {
     }
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      router.replace('/cameraScreen');
+      router.replace('/app/(main)/scanner' as any);
       console.log("Succes", `Te-ai logat ca: ${userCredential.user.email}`);
       // Aici, mai târziu, vom pune codul să te mute pe ecranul "Explore"
     } catch (error: any) {

@@ -9,7 +9,7 @@ import { auth } from '../firebaseConfig';
 import { useAuthStore } from '../store/authStore';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -19,40 +19,48 @@ export default function RootLayout() {
   const { setUser, setLoading, isLoading, user } = useAuthStore();
 
   useEffect(() => {
-    // Firebase verifică automat dacă există un token salvat pe dispozitiv.
-    // Această funcție rulează imediat la pornire și ori de câte ori
-    // starea de autentificare se schimbă (login, logout).
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
     });
-
-    return () => unsubscribe(); // Curățăm listener-ul la distrugerea componentei
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (isLoading) return;
 
-    const onCameraScreen = segments[0] === 'cameraScreen';
-    const onAuthScreens = segments[0] === 'login' || segments[0] === 'signup';
+    const inMain = segments[0] === '(main)';
+    const inCanvas = segments[0] === 'canvas';
+    const inAuth = segments[0] === 'login' || segments[0] === 'signup';
+    const inIndex = segments[0] === undefined || (segments[0] as string) === 'index';
 
-    if (user && !onCameraScreen) {
-      router.replace('/cameraScreen');
-    } else if (!user && !onAuthScreens && segments[0] !== '(tabs)') {
-      router.replace('/');
+    // Dacă userul e logat (ARTIST) și e pe index sau pe ecranele de auth
+    // → trimite-l direct la scanner
+    if (user && !user.isAnonymous && (inIndex || inAuth)) {
+      router.replace('/(main)/scanner' as any);
+      return;
     }
-}, [isLoading, segments, user]);
+
+    // Dacă e pe un ecran protejat (team) fără cont → înapoi la index
+    if ((!user || user.isAnonymous) && inMain && (segments[1] as string) === 'team') {
+      router.replace('/(main)/scanner' as any);
+      return;
+    }
+  }, [isLoading, segments, user]);
+
+  if (isLoading) {
+    // Ecran negru cât verifică Firebase tokenul salvat
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* Tab-urile (Index + Explore) — publice */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* Ecrane fără tab bar și fără header */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(main)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="signup" options={{ headerShown: false }} />
-        <Stack.Screen name="cameraScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="canvas" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import { CameraView, useCameraPermissions, CameraView as CameraViewType } from 'expo-camera';
+import { CameraView, CameraView as CameraViewType, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
+import { useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const GOOGLE_VISION_API_KEY = 'AIzaSyCbVzQ4SlqxHEhsoHIvDfFv2lW7fj2EY0w';
 
@@ -17,7 +17,7 @@ interface VisionLabel {
 }
 
 const KNOWN_POSTERS: Poster[] = [
-    { id: 'afis_1', uri: require('../assets/images/afis1.png'), label: 'Poster' },
+    { id: 'afis_1', uri: require('../../assets/images/afis1.png'), label: 'Poster' },
 ];
 
 export default function ScannerScreen() {
