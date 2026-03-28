@@ -1,6 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+
+import { useRouter } from 'expo-router';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
+    const router = useRouter();
     return (
         <View
             style={{
@@ -57,6 +60,7 @@ export default function HomeScreen() {
 
             {/* ARTIST BUTTON */}
             <TouchableOpacity
+                onPress={() => router.push('/login')}
                 style={{
                     borderWidth: 2,
                     borderColor: '#00ffff',
