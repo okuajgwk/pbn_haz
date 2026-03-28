@@ -1,8 +1,8 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth } from '../../firebaseConfig';
+import { auth } from '../firebaseConfig';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
@@ -10,6 +10,14 @@ export default function SignUpScreen() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
 
+  useFocusEffect(
+    useCallback(() => {
+      // Golește tot când ecranul devine vizibil
+      setEmail('');
+      setPassword('');
+      setErrorMessage('');
+    }, [])
+  );
   const handleRegister = async () => {
     // MODIFICAREA 1: Validare înainte de a trimite la Firebase
     if (!email || !password) {
@@ -70,7 +78,7 @@ export default function SignUpScreen() {
       </TouchableOpacity>
 
       {/* Buton de întoarcere la Login */}
-      <TouchableOpacity onPress={() => router.back()}>
+      <TouchableOpacity onPress={() => router.replace('/login')}>
         <Text style={{color: '#aaa', marginTop: 20, textAlign: 'center'}}>
           Already have an account? Go back
         </Text>

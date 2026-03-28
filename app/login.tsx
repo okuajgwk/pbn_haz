@@ -1,15 +1,24 @@
 
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth } from '../../firebaseConfig';
+import { auth } from '../firebaseConfig';
 
 export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
+  useFocusEffect(
+    useCallback(() => {
+      // De fiecare dată când ecranul devine activ/vizibil, ștergem datele vechi
+      setEmail('');
+      setPassword('');
+      setErrorMessage('');
+    }, [])
+  );
+
   const handleLogin = async () => {
     setErrorMessage('');
     if (!email || !password) {
@@ -18,6 +27,7 @@ export default function App() {
     }
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      router.replace('/cameraScreen');
       console.log("Succes", `Te-ai logat ca: ${userCredential.user.email}`);
       // Aici, mai târziu, vom pune codul să te mute pe ecranul "Explore"
     } catch (error: any) {
