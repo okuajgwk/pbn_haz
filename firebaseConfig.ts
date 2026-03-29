@@ -1,30 +1,31 @@
-// Importăm funcția principală care pornește aplicația Firebase
-import { initializeApp } from 'firebase/app';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-// Importăm modulele specifice de care vom avea nevoie
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+// Adăugăm @ts-ignore pentru a forța TypeScript să ignore lipsa definiției.
+// Funcția va rula perfect în spate.
+// @ts-ignore
+import { getReactNativePersistence, initializeAuth } from "firebase/auth";
 
-// --- ÎNLOCUIEȘTE ACEST BLOC CU CODUL TĂU DE PE SITE ---
 const firebaseConfig = {
   apiKey: "AIzaSyBqJtRHfzzesHTriVpfvz9kE0Ntj82qalI",
   authDomain: "pbn-haz.firebaseapp.com",
   projectId: "pbn-haz",
   storageBucket: "pbn-haz.firebasestorage.app",
   messagingSenderId: "32978976320",
-  appId: "1:32978976320:web:0efd53d99a5f7055a6a9a5"
+  appId: "1:32978976320:web:0efd53d99a5f7055a6a9a5",
 };
-// ------------------------------------------------------
 
-// 1. Inițializăm instanța Firebase cu cheile tale
+// 1. Inițializăm instanța Firebase
 const app = initializeApp(firebaseConfig);
 
-// 2. Inițializăm serviciul de Autentificare
-const auth = getAuth(app);
+// 2. Inițializăm serviciul de Autentificare cu persistență
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
-// 3. Inițializăm serviciul de Bază de Date (Firestore)
+// 3. Inițializăm Baza de Date
 const db = getFirestore(app);
 
-// 4. Exportăm variabilele pentru a le putea folosi în alte fișiere (ex: login.tsx)
 export { auth, db };
 

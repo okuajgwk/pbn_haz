@@ -44,7 +44,6 @@ interface Sticker {
 }
 
 export default function CanvasScreen() {
-  // Identificăm afișul scanat. Dacă nu vine din scanner, folosim un ID generic.
   const { posterId } = useLocalSearchParams<{ posterId: string }>();
   const activePosterId = posterId || "afis_1";
 
@@ -56,12 +55,14 @@ export default function CanvasScreen() {
   const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
   const [tool, setTool] = useState<"brush" | "eraser" | "sticker">("brush");
 
+  // NOU: Referință sincronă pentru linia desenată (elimină eroarea cu "L")
+  const pathRef = useRef("");
+
   const stateRef = useRef({
     tool: "brush",
     selectedColor: "#ff00ff",
     brushSize: 4,
     selectedSticker: null as string | null,
-    currentPath: "",
   });
 
   useEffect(() => {
@@ -70,21 +71,27 @@ export default function CanvasScreen() {
       selectedColor,
       brushSize,
       selectedSticker,
-      currentPath: stateRef.current.currentPath,
     };
   }, [tool, selectedColor, brushSize, selectedSticker]);
 
   // SINCRONIZARE REAL-TIME CU FIRESTORE
+  // SINCRONIZARE REAL-TIME CU FIRESTORE (CU FILTRU ANTI-CRASH)
   useEffect(() => {
     const docRef = doc(db, "posters", activePosterId);
 
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setPaths(data.paths || []);
+
+        // FILTRUL MAGIC: Păstrăm doar liniile care sunt valide (încep cu 'M')
+        const rawPaths = data.paths || [];
+        const safePaths = rawPaths.filter(
+          (p: PathData) => p.d && p.d.trim().startsWith("M"),
+        );
+
+        setPaths(safePaths);
         setStickers(data.stickers || []);
       } else {
-        // Creăm documentul dacă nu există
         setDoc(docRef, { paths: [], stickers: [] });
       }
     });
@@ -107,7 +114,6 @@ export default function CanvasScreen() {
             y: locationY - 20,
           };
 
-          // Salvare sticker în Firebase
           const docRef = doc(db, "posters", activePosterId);
           await updateDoc(docRef, {
             stickers: arrayUnion(newSticker),
@@ -115,35 +121,44 @@ export default function CanvasScreen() {
           return;
         }
 
-        stateRef.current.currentPath = `M${locationX},${locationY}`;
-        setCurrentPath(stateRef.current.currentPath);
+        // Salvăm M-ul inițial instantaneu în ref
+        pathRef.current = `M${locationX},${locationY}`;
+        setCurrentPath(pathRef.current);
       },
       onPanResponderMove: (e) => {
+        // Folosim stateRef.current.tool pentru a evita stale closures
         if (stateRef.current.tool === "sticker") return;
         const { locationX, locationY } = e.nativeEvent;
-        stateRef.current.currentPath += ` L${locationX},${locationY}`;
-        setCurrentPath(stateRef.current.currentPath);
+
+        // Construim calea direct în ref, în siguranță
+        if (!pathRef.current || !pathRef.current.startsWith("M")) {
+          pathRef.current = `M${locationX},${locationY}`;
+        } else {
+          pathRef.current += ` L${locationX},${locationY}`;
+        }
+
+        setCurrentPath(pathRef.current);
       },
       onPanResponderRelease: async () => {
-        const { tool, selectedColor, brushSize, currentPath } =
-          stateRef.current;
+        const { tool, selectedColor, brushSize } = stateRef.current;
 
         if (tool === "sticker") return;
 
-        if (currentPath) {
+        // Verificăm dacă avem o linie validă în ref
+        if (pathRef.current) {
           const newPath = {
-            d: currentPath,
+            d: pathRef.current,
             color: tool === "eraser" ? "#0a0a0a" : selectedColor,
             width: tool === "eraser" ? 20 : brushSize,
           };
 
-          // Salvare path în Firebase
           const docRef = doc(db, "posters", activePosterId);
           await updateDoc(docRef, {
             paths: arrayUnion(newPath),
           });
 
-          stateRef.current.currentPath = "";
+          // Curățăm ref-ul și state-ul
+          pathRef.current = "";
           setCurrentPath("");
         }
       },
@@ -238,7 +253,6 @@ export default function CanvasScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              // Undo local (va fi suprascris de sync-ul din cloud imediat)
               if (tool === "sticker") {
                 setStickers((prev) => prev.slice(0, -1));
               } else {
